@@ -1,5 +1,5 @@
 import net from 'net'
-import { HttpRequest } from './request';
+import { HttpRequest, IHttpRequest } from './request';
 
 interface IHttpServer {
     host: string;
@@ -60,7 +60,7 @@ export class HttpServer implements IHttpServer {
         })
     }
 
-    private parseRequest(socket: net.Socket, request: string) {
+    private parseRequest(socket: net.Socket, request: string): IHttpRequest {
         const [headers, ...body] = request.split('\r\n\r\n')
         const reqHeaders =  headers.split('\r\n')
 

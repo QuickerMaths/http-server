@@ -1,12 +1,11 @@
 import net from 'net'
 
-interface IHttpRequest {
+export interface IHttpRequest {
     method: string;
     path: string;
     httpVersion: string;
     headers: Record<string, string>;
     body: string[];
-    socket: net.Socket;
 }
 
 export class HttpRequest implements IHttpRequest {
@@ -15,7 +14,7 @@ export class HttpRequest implements IHttpRequest {
     httpVersion;
     headers;
     body;
-    socket;
+    private socket: net.Socket
 
     constructor(
         method: string,
