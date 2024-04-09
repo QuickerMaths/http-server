@@ -1,4 +1,5 @@
 import net from 'net'
+import { Buffer } from 'node:buffer'
 
 interface IHttpServer {
     host: string;
@@ -40,11 +41,11 @@ export class HttpServer implements IHttpServer {
         }
 
         this.server.on('connection', (socket) => {
-            socket.on('data', (chunk) => {
-                console.log(chunk.toString())
-                
-                socket.end()
-            })
+            socket.on('data', (data) => {
+                const request = data.toString()
+
+                this.parseRequest(socket, request)
+            })  
         })
     }
 
@@ -57,5 +58,32 @@ export class HttpServer implements IHttpServer {
         this.server.listen(this.port, this.host, () => {
             console.log(`Server restarted and listening on ${this.host}:${this.port}`)
         })
+    }
+
+    private parseRequest(socket: net.Socket, request: string) {
+        const [headers, ...body] = request.split('\r\n\r\n')
+        const reqHeaders =  headers.split('\r\n')
+        
+        const [method, path, httpVersionWithProtocol] = (reqHeaders.shift() as string).split(' ')
+        const httpVersion = httpVersionWithProtocol.split('/')[1]
+
+        const parsedHeaders = reqHeaders.reduce((acc, currentHeader) => {
+            const [key, value] = currentHeader.split(':');
+            return {
+              ...acc,
+              [key.trim().toLowerCase()]: value.trim()
+            };
+        }, {});
+
+        const parsedRequest = {
+          method,
+          path,
+          httpVersion,
+          headers: parsedHeaders,
+          body,
+          socket
+        };
+
+        return parsedRequest
     }
 }
