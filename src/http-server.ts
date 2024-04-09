@@ -1,5 +1,4 @@
 import net from 'net'
-import { Buffer } from 'node:buffer'
 
 interface IHttpServer {
     host: string;
@@ -63,7 +62,7 @@ export class HttpServer implements IHttpServer {
     private parseRequest(socket: net.Socket, request: string) {
         const [headers, ...body] = request.split('\r\n\r\n')
         const reqHeaders =  headers.split('\r\n')
-        
+
         const [method, path, httpVersionWithProtocol] = (reqHeaders.shift() as string).split(' ')
         const httpVersion = httpVersionWithProtocol.split('/')[1]
 
