@@ -31,4 +31,8 @@ export class HttpRequest implements IHttpRequest {
         this.body = body,
         this.socket = socket
     }
+
+    get(name: string){
+        return this.headers[name.toLowerCase()]
+    }
 }
