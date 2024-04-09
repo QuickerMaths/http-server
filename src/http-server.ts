@@ -1,4 +1,5 @@
 import net from 'net'
+import { HttpRequest } from './request';
 
 interface IHttpServer {
     host: string;
@@ -43,7 +44,7 @@ export class HttpServer implements IHttpServer {
             socket.on('data', (data) => {
                 const request = data.toString()
 
-                this.parseRequest(socket, request)
+                const parsedRequest = this.parseRequest(socket, request)
             })  
         })
     }
@@ -74,15 +75,6 @@ export class HttpServer implements IHttpServer {
             };
         }, {});
 
-        const parsedRequest = {
-          method,
-          path,
-          httpVersion,
-          headers: parsedHeaders,
-          body,
-          socket
-        };
-
-        return parsedRequest
+        return new HttpRequest(method, path, httpVersion, parsedHeaders, body, socket)
     }
 }
