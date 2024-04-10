@@ -1,5 +1,6 @@
 import net from 'net'
 import { HttpRequest, IHttpRequest } from './request';
+import { HttpResponse, IHttpResponse } from './response';
 
 interface IHttpServer {
     host: string;
@@ -8,12 +9,14 @@ interface IHttpServer {
     init(): void
     stop(): void
     restart(): void
+    get(path: string, cb: (request: IHttpRequest, response: IHttpResponse) => void): void
 }
 
 export class HttpServer implements IHttpServer {
     port;
     host;
     server;
+    private listeners;
 
     constructor(
         port: number = 80,
@@ -22,6 +25,7 @@ export class HttpServer implements IHttpServer {
         this.port = port;
         this.host = host;
         this.server = new net.Server() 
+        this.listeners = new Map<string, (request: IHttpRequest, response: IHttpResponse) => void>()
     }
 
     init() {
@@ -36,16 +40,20 @@ export class HttpServer implements IHttpServer {
             console.log(`Server started listening on ${this.host}:${this.port}`)
         })
 
-        if(this.server.listening){
-            this.server.close()
-        }
-
         this.server.on('connection', (socket) => {
             socket.on('data', (data) => {
                 const request = data.toString()
 
                 const parsedRequest = this.parseRequest(socket, request)
-            })  
+                const response = new HttpResponse(socket)
+
+                this.forwardRequestToListener(parsedRequest, response)
+            }) 
+
+            socket.on('error', (error: any) => {
+                if (error.code === 'ECONNRESET' || !socket.writable) socket.end('HTTP/1.1 400 Bad Request\n');
+                console.log('client error\n', error);
+            })
         })
     }
 
@@ -59,6 +67,11 @@ export class HttpServer implements IHttpServer {
             console.log(`Server restarted and listening on ${this.host}:${this.port}`)
         })
     }
+
+    get(path: string, cb: (request: IHttpRequest, response: IHttpResponse) => void): void {
+        this.listeners.set('GET ' + path, cb);
+    }
+    
 
     private parseRequest(socket: net.Socket, request: string): IHttpRequest {
         const [headers, ...body] = request.split('\r\n\r\n')
@@ -77,4 +90,22 @@ export class HttpServer implements IHttpServer {
 
         return new HttpRequest(method, path, httpVersion, parsedHeaders, body, socket)
     }
+
+    private async forwardRequestToListener(request: IHttpRequest, response: IHttpResponse) {
+        const key = `${request.method.toUpperCase()} ${request.path}`;
+    
+        if (this.listeners.has(key)) {
+            try {
+                const cb = this.listeners.get(key)!;
+                cb(request, response);
+            } catch (e) {
+              response.setHead(500, 'Internal server Error')
+              response.send();
+            }
+            return;
+        }
+
+        response.setHead(404, 'Not Found')
+        response.send();
+      }
 }
