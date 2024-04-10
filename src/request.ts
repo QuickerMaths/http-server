@@ -6,6 +6,7 @@ export interface IHttpRequest {
     httpVersion: string;
     headers: Record<string, string>;
     body: string[];
+    get(name: string): string;
 }
 
 export class HttpRequest implements IHttpRequest {
