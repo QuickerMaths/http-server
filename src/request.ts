@@ -15,7 +15,7 @@ export class HttpRequest implements IHttpRequest {
     httpVersion;
     headers;
     body;
-    readonly socket: net.Socket
+    private socket: net.Socket
 
     constructor(
         method: string,
