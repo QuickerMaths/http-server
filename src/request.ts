@@ -6,7 +6,9 @@ export interface IHttpRequest {
     httpVersion: string;
     headers: Record<string, string>;
     body: string[];
-    get(name: string): string;
+    queryParams: URLSearchParams | {};
+    url: URL;
+    getHeader(name: string): string;
 }
 
 export class HttpRequest implements IHttpRequest {
@@ -15,6 +17,8 @@ export class HttpRequest implements IHttpRequest {
     httpVersion;
     headers;
     body;
+    queryParams;
+    url;
     private socket: net.Socket
 
     constructor(
@@ -23,17 +27,21 @@ export class HttpRequest implements IHttpRequest {
         httpVersion: string,
         headers: Record<string, string>,
         body: string[],
+        queryParams: URLSearchParams | {},
+        url: URL,
         socket: net.Socket,
     ) {
         this.method = method,
         this.path = path,
         this.httpVersion = httpVersion,
         this.headers = headers,
-        this.body = body,
+        this.body = body || {},
+        this.queryParams = queryParams || {},
+        this.url = url,
         this.socket = socket
     }
 
-    get(name: string){
+    getHeader(name: string){
         return this.headers[name.toLowerCase()]
     }
 }
