@@ -7,6 +7,7 @@ export interface IHttpRequest {
     headers: Record<string, string>;
     body: string[];
     queryParams: URLSearchParams | {};
+    params: Record<string, string> | {};
     url: URL;
     getHeader(name: string): string;
 }
@@ -18,6 +19,7 @@ export class HttpRequest implements IHttpRequest {
     headers;
     body;
     queryParams;
+    params;
     url;
     private socket: net.Socket
 
@@ -28,6 +30,7 @@ export class HttpRequest implements IHttpRequest {
         headers: Record<string, string>,
         body: string[],
         queryParams: URLSearchParams | {},
+        params: Record<string, string> | {},
         url: URL,
         socket: net.Socket,
     ) {
@@ -37,6 +40,7 @@ export class HttpRequest implements IHttpRequest {
         this.headers = headers,
         this.body = body || {},
         this.queryParams = queryParams || {},
+        this.params = params || {},
         this.url = url,
         this.socket = socket
     }
