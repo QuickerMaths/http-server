@@ -68,7 +68,7 @@ export class HttpServer implements IHttpServer {
         })
     }
 
-    get(path: string, cb: (request: IHttpRequest, response: IHttpResponse) => void): void {
+    get(path: string, cb: (request: IHttpRequest, response: IHttpResponse) => void): void { 
         this.listeners.set('GET ' + path, cb);
     }
     
@@ -77,18 +77,22 @@ export class HttpServer implements IHttpServer {
         const [headers, ...body] = request.split('\r\n\r\n')
         const reqHeaders =  headers.split('\r\n')
 
-        const [method, path, httpVersionWithProtocol] = (reqHeaders.shift() as string).split(' ')
+        const [method, reqPath, httpVersionWithProtocol] = (reqHeaders.shift() as string).split(' ')
         const httpVersion = httpVersionWithProtocol.split('/')[1]
 
-        const parsedHeaders = reqHeaders.reduce((acc, currentHeader) => {
-            const [key, value] = currentHeader.split(':');
+        const parsedHeaders: Record<string, string> = reqHeaders.reduce((acc, currentHeader) => {
+            const [key, value] = currentHeader.split(': ');
             return {
               ...acc,
               [key.trim().toLowerCase()]: value.trim()
             };
         }, {});
 
-        return new HttpRequest(method, path, httpVersion, parsedHeaders, body, socket)
+        const url = new URL(reqPath, `http://${parsedHeaders.host}`)
+        const queryParams = url.searchParams
+        const path = url.pathname
+
+        return new HttpRequest(method, path, httpVersion, parsedHeaders, body, queryParams, url, socket)
     }
 
     private async forwardRequestToListener(request: IHttpRequest, response: IHttpResponse) {
