@@ -68,7 +68,8 @@ export class HttpResponse implements IHttpResponse {
             console.log(typeof body)
             switch(typeof body) {
                 case 'string':
-                    if(!this.getHeader('Content-Type')) this.setHeader('Content-Type', 'text/html; charset=utf-8'); break;
+                    if(!this.getHeader('Content-Type')) this.setHeader('Content-Type', 'text/html; charset=utf-8');
+                    break;
                 case 'boolean':
                 case 'number':
                 case 'object':
