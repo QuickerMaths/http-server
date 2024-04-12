@@ -1,5 +1,8 @@
 import net from 'net'
 import { Buffer } from 'node:buffer'
+import fs from 'fs'
+import path from 'path'
+import { validatePath } from './utils';
 
 export interface IHttpResponse {
     statusCode: number;
@@ -12,6 +15,7 @@ export interface IHttpResponse {
     setHead(statusCode?: number, statusText?: string, headers?: Record<string, string | boolean>): void;
     send(body?: any): void;
     json(body: any): void;
+    sendFile(path: string): void;
 }
 
 export class HttpResponse implements IHttpResponse {
@@ -61,9 +65,10 @@ export class HttpResponse implements IHttpResponse {
 
     send(body?: any) {
         if(body !== undefined){
+            console.log(typeof body)
             switch(typeof body) {
                 case 'string':
-                    if(!this.getHeader('Content-Type')) this.setHeader('Content-Type', 'text/html; charset=utf-8')
+                    if(!this.getHeader('Content-Type')) this.setHeader('Content-Type', 'text/html; charset=utf-8'); break;
                 case 'boolean':
                 case 'number':
                 case 'object':
@@ -96,13 +101,28 @@ export class HttpResponse implements IHttpResponse {
     json(body: any) {
         const json = Buffer.from(JSON.stringify(body));
 
-        this.setHeader('content-type', 'application/json; charset=utf-8');
-        this.setHeader('content-length', json.length);
+        this.setHeader('Content-Type', 'application/json; charset=utf-8');
+        this.setHeader('Content-Length', json.length);
 
         this.sendHeaders()
 
         this.socket.write(`${json}\r\n`)
         this.socket.end()
+    }
+
+    sendFile(path: string): void {
+        const validatedPath = validatePath(path)
+
+        fs.readFile(validatedPath, (err, data) => {
+            try {
+                if(err) throw err   
+                this.send(data.toString())
+            } catch(err) {
+                console.log(err)
+                this.setHead(404, 'Not found')
+                this.send()
+            }
+        })
     }
 
     private sendHeaders() {
@@ -120,7 +140,7 @@ export class HttpResponse implements IHttpResponse {
         this.socket.write('\r\n');
     }
 
-    private getHeader(key: string): string | number | boolean | null  {
+    private getHeader(key: string): unknown  {
         if(this.headers[key.toLowerCase().trim()]) return this.headers[key]
         return null
     }

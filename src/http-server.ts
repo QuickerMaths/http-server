@@ -99,6 +99,7 @@ export class HttpServer implements IHttpServer {
         
         this.listeners.set('POST ' + path, route);
     }
+    
     private parseRequest(socket: net.Socket, request: string): IHttpRequest {
         const [headers, ...body] = request.split('\r\n\r\n')
         const reqHeaders =  headers.split('\r\n')
