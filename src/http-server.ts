@@ -14,6 +14,12 @@ interface IHttpServer {
     post(path: string, cb: (request: IHttpRequest, response: IHttpResponse) => void): void
 }
 
+type RouteType = {
+    cb: (request: IHttpRequest, response: IHttpResponse) => void,
+    keys: Key[],
+    pathRegex: RegExp
+}
+
 export class HttpServer implements IHttpServer {
     port;
     host;
@@ -27,11 +33,7 @@ export class HttpServer implements IHttpServer {
         this.port = port;
         this.host = host;
         this.server = new net.Server() 
-        this.listeners = new Map<string, {
-            cb: (request: IHttpRequest, response: IHttpResponse) => void,
-            keys: Key[],
-            pathRegex: RegExp
-        }>()
+        this.listeners = new Map<string, RouteType>()
     }
 
     init() {
