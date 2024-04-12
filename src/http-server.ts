@@ -86,6 +86,19 @@ export class HttpServer implements IHttpServer {
         this.listeners.set('GET ' + path, route);
     }
 
+
+    post(path: string, cb: (request: IHttpRequest, response: IHttpResponse) => void): void { 
+        const keys: Key[] = []
+        const pathRegex = pathToRegexp(path, keys)
+
+        const route = {
+            cb,
+            keys,
+            pathRegex
+        }
+        
+        this.listeners.set('POST ' + path, route);
+    }
     private parseRequest(socket: net.Socket, request: string): IHttpRequest {
         const [headers, ...body] = request.split('\r\n\r\n')
         const reqHeaders =  headers.split('\r\n')
@@ -104,7 +117,7 @@ export class HttpServer implements IHttpServer {
         return new HttpRequest(method, path, httpVersion, parsedHeaders, body, queryParams, params, url, socket)
     }
 
-    private createParams(path: string): Record<string, string> | {} {
+    private createParams(path: string): Record<string, string> {
         const params: Record<string, string> = {};
         const matchingRoute = Array.from(this.listeners.values()).find(route => route.pathRegex.test(path));
         if (matchingRoute) {
