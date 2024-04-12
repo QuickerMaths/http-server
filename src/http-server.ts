@@ -11,6 +11,7 @@ interface IHttpServer {
     stop(): void
     restart(): void
     get(path: string, cb: (request: IHttpRequest, response: IHttpResponse) => void): void
+    post(path: string, cb: (request: IHttpRequest, response: IHttpResponse) => void): void
 }
 
 export class HttpServer implements IHttpServer {
