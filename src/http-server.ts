@@ -38,15 +38,15 @@ export class HttpServer implements IHttpServer {
 
     init() {
         this.server.on('error', (e: any) => {
-            if (e.code === 'EADDRINUSE') {
-                console.log('Address in use, retrying...');
-                setTimeout(() => this.restart(), 1000);
+            if(e.code === 'ERR_SERVER_ALREADY_LISTEN' || e.code === 'EADDRINUSE') {
+                this.port++;
+                this.server.listen(this.port, this.host);
+            } else {
+                throw e;
             }
         });
 
-        this.server.listen(this.port, this.host, () => {
-            console.log(`Server started listening on ${this.host}:${this.port}`)
-        })
+        this.server.listen(this.port, this.host)
 
         this.server.on('connection', (socket) => {
             socket.on('data', (data) => {
@@ -60,7 +60,6 @@ export class HttpServer implements IHttpServer {
 
             socket.on('error', (error: any) => {
                 if (error.code === 'ECONNRESET' || !socket.writable) socket.end('HTTP/1.1 400 Bad Request\n');
-                console.log('client error\n', error);
             })
         })
     }
@@ -72,7 +71,6 @@ export class HttpServer implements IHttpServer {
     restart(){ 
         this.stop()
         this.server.listen(this.port, this.host, () => {
-            console.log(`Server restarted and listening on ${this.host}:${this.port}`)
         })
     }
 
