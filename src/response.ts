@@ -64,7 +64,6 @@ export class HttpResponse implements IHttpResponse {
 
     send(body?: any) {
         if(body !== undefined){
-            console.log(typeof body)
             switch(typeof body) {
                 case 'string':
                     if(!this._getHeader('Content-Type')) this.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -72,26 +71,26 @@ export class HttpResponse implements IHttpResponse {
                 case 'boolean':
                 case 'number':
                 case 'object':
-                    if(body === null){
-                        body = ""
-                    } else if (Buffer.isBuffer(body)){
+                    if (Buffer.isBuffer(body)){
                         if(!this._getHeader('Content-Type')) this.setHeader('Content-Type', 'application/octet-stream')
                     } else {
                         return this.json(body)
                     }
-
-                if(!this._getHeader('Content-Length')){
-                    if(Buffer.isBuffer(body)){
-                        this.setHeader('Content-Length', body.length)
-                    } else {
-                        const buffer = Buffer.from(body)
-                        this.setHeader('Content-Length', buffer.length)
-                    }
-                }
             }   
 
+            if(!this._getHeader('Content-Length')){
+                if(Buffer.isBuffer(body)){
+                    this.setHeader('Content-Length', body.length)
+                } else {
+                    const buffer = Buffer.from(body)
+                    this.setHeader('Content-Length', buffer.length)
+                }
+            }
+
+
             this._sendHeaders()
-            this.socket.write(`${body}\r\n`)
+
+            if(body) this.socket.write(`${body}\r\n`)
         }
 
         if(!this.headersSent) this._sendHeaders()
@@ -137,6 +136,7 @@ export class HttpResponse implements IHttpResponse {
         Object.keys(this.headers).forEach(headerKey => {
             this.socket.write(`${headerKey}: ${this.headers[headerKey]}\r\n`);
         });
+
         this.socket.write('\r\n');
     }
 
