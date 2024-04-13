@@ -46,7 +46,7 @@ export class HttpServer implements IHttpServer {
             }
         });
 
-        this.server.listen(this.port, this.host)
+         this.server.listen(this.port, this.host)
 
         this.server.on('connection', (socket) => {
             socket.on('data', (data) => {
