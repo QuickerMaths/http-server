@@ -67,7 +67,7 @@ export class HttpResponse implements IHttpResponse {
             console.log(typeof body)
             switch(typeof body) {
                 case 'string':
-                    if(!this.getHeader('Content-Type')) this.setHeader('Content-Type', 'text/html; charset=utf-8');
+                    if(!this._getHeader('Content-Type')) this.setHeader('Content-Type', 'text/html; charset=utf-8');
                     break;
                 case 'boolean':
                 case 'number':
@@ -75,12 +75,12 @@ export class HttpResponse implements IHttpResponse {
                     if(body === null){
                         body = ""
                     } else if (Buffer.isBuffer(body)){
-                        if(!this.getHeader('Content-Type')) this.setHeader('Content-Type', 'application/octet-stream')
+                        if(!this._getHeader('Content-Type')) this.setHeader('Content-Type', 'application/octet-stream')
                     } else {
                         return this.json(body)
                     }
 
-                if(!this.getHeader('Content-Length')){
+                if(!this._getHeader('Content-Length')){
                     if(Buffer.isBuffer(body)){
                         this.setHeader('Content-Length', body.length)
                     } else {
@@ -90,11 +90,11 @@ export class HttpResponse implements IHttpResponse {
                 }
             }   
 
-            this.sendHeaders()
+            this._sendHeaders()
             this.socket.write(`${body}\r\n`)
         }
 
-        if(!this.headersSent) this.sendHeaders()
+        if(!this.headersSent) this._sendHeaders()
         this.socket.end()
     }
 
@@ -104,7 +104,7 @@ export class HttpResponse implements IHttpResponse {
         this.setHeader('Content-Type', 'application/json; charset=utf-8');
         this.setHeader('Content-Length', json.length);
 
-        this.sendHeaders()
+        this._sendHeaders()
 
         this.socket.write(`${json}\r\n`)
         this.socket.end()
@@ -125,7 +125,7 @@ export class HttpResponse implements IHttpResponse {
         })
     }
 
-    private sendHeaders() {
+    private _sendHeaders() {
         if(this.headersSent) throw Error('Cannot send headers. Headers already send!')
 
         this.headersSent = true
@@ -140,7 +140,7 @@ export class HttpResponse implements IHttpResponse {
         this.socket.write('\r\n');
     }
 
-    private getHeader(key: string): unknown  {
+    private _getHeader(key: string): unknown  {
         if(this.headers[key.toLowerCase().trim()]) return this.headers[key]
         return null
     }
