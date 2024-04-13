@@ -1,5 +1,5 @@
-import { HttpServer, RouteType } from "../http-server";
-import { afterEach, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals'
+import { HttpServer } from "../http-server";
+import { beforeAll, describe, expect, it, jest } from '@jest/globals'
 
 describe('HttpServer', () => {
     let server: HttpServer;
@@ -17,7 +17,7 @@ describe('HttpServer', () => {
             const matchingRouteMock = Array.from(server['listeners'].values())
                 .find(route => route.pathRegex.test(requestMock.path));
 
-            server['forwardRequestToListener'](requestMock, responseMock);
+            server['_forwardRequestToListener'](requestMock, responseMock);
 
             expect(matchingRouteMock?.cb).toHaveBeenCalledWith(requestMock, responseMock)
         });
@@ -26,7 +26,7 @@ describe('HttpServer', () => {
             const requestMock: any = { path: '/nonexistent', method: 'GET' };
             const responseMock: any = { setHead: jest.fn(), send: jest.fn() };
 
-            server['forwardRequestToListener'](requestMock, responseMock);
+            server['_forwardRequestToListener'](requestMock, responseMock);
             
             expect(responseMock.setHead).toHaveBeenCalledWith(404, 'Not Found');
             expect(responseMock.send).toHaveBeenCalled();

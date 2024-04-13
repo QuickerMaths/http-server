@@ -52,10 +52,10 @@ export class HttpServer implements IHttpServer {
             socket.on('data', (data) => {
                 const input = data.toString()
 
-                const request = this.parseRequest(socket, input)
+                const request = this._parseRequest(socket, input)
                 const response = new HttpResponse(socket)
 
-                this.forwardRequestToListener(request, response)
+                this._forwardRequestToListener(request, response)
             }) 
 
             socket.on('error', (error: any) => {
@@ -103,25 +103,25 @@ export class HttpServer implements IHttpServer {
         this.listeners.set('POST ' + path, route);
     }
     
-    private parseRequest(socket: net.Socket, request: string): IHttpRequest {
+    private _parseRequest(socket: net.Socket, request: string): IHttpRequest {
         const [headers, ...body] = request.split('\r\n\r\n')
         const reqHeaders =  headers.split('\r\n')
 
         const [method, reqPath, httpVersionWithProtocol] = (reqHeaders.shift() as string).split(' ')
         const httpVersion = httpVersionWithProtocol.split('/')[1]
 
-        const parsedHeaders = this.parseHeaders(reqHeaders)
+        const parsedHeaders = this._parseHeaders(reqHeaders)
 
         const url = new URL(reqPath, `http://${parsedHeaders.host}`)
         const queryParams = url.searchParams
         const path = url.pathname
 
-        const params = this.createParams(path)
+        const params = this._createParams(path)
 
         return new HttpRequest(method, path, httpVersion, parsedHeaders, body, queryParams, params, url, socket)
     }
 
-    private createParams(path: string): Record<string, string> {
+    private _createParams(path: string): Record<string, string> {
         const params: Record<string, string> = {};
         const matchingRoute = Array.from(this.listeners.values()).find(route => route.pathRegex.test(path));
         if (matchingRoute) {
@@ -136,7 +136,7 @@ export class HttpServer implements IHttpServer {
         return params;
     }
 
-    private parseHeaders(headers: string[]): Record<string, string> {
+    private _parseHeaders(headers: string[]): Record<string, string> {
         const parsedHeaders: Record<string, string> = headers.reduce((acc, currentHeader) => {
             const [key, value] = currentHeader.split(': ');
             return {
@@ -148,7 +148,7 @@ export class HttpServer implements IHttpServer {
         return parsedHeaders
     }
 
-    private async forwardRequestToListener(request: IHttpRequest, response: IHttpResponse) {
+    private async _forwardRequestToListener(request: IHttpRequest, response: IHttpResponse) {
         const matchingRoute = Array.from(this.listeners.values()).find(route => route.pathRegex.test(request.path));
 
         if(matchingRoute){

@@ -1,7 +1,6 @@
 import net from 'net'
 import { Buffer } from 'node:buffer'
 import fs from 'fs'
-import path from 'path'
 import { validatePath } from './utils';
 
 export interface IHttpResponse {

@@ -12,14 +12,14 @@ describe('HttpServer', () => {
         it('should set params to empty object', () => {
             server.get('/test', jest.fn());
 
-            const params = server['createParams']('/test/123');
+            const params = server['_createParams']('/test');
             expect(params).toEqual({});
         });
 
         it('should create params from a path', () => {
             server.get('/test/:id', jest.fn());
 
-            const params = server['createParams']('/test/123');
+            const params = server['_createParams']('/test/123');
             expect(params).toEqual({ id: '123' });
         });
     });

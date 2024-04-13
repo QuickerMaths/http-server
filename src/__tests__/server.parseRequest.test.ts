@@ -21,7 +21,7 @@ describe('HttpServer', () => {
                 url, 
                 params, 
                 queryParams 
-            } = server['parseRequest'](socketMock, request);
+            } = server['_parseRequest'](socketMock, request);
 
             expect(method).toEqual('GET');
             expect(path).toEqual('/test/123');
