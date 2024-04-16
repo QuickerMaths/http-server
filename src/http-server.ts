@@ -23,6 +23,7 @@ type RouteType = {
 export class HttpServer implements IHttpServer {
     port;
     host;
+
     server;
     private listeners;
 
