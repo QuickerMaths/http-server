@@ -63,7 +63,7 @@ arguments port and host.
 `RouteType` is an object that includes:
 
 - `cb`: This is a callback function that gets executed when a request matches the route. It takes two arguments: a request object and a response object.
-- `keys`: This is an array of `Key` objects from the `path-to-regexp` library. Each `Key` represents a dynamic part of the path (e.g., in '/users/:id', 'id' is a dynamic part).
+- `keys`: This is an array of `Key` objects from the `path-to-regexp` (borrowed that from express) library. Each `Key` represents a dynamic part of the path (e.g., in '/users/:id', 'id' is a dynamic part).
 - `pathRegex`: This is a regular expression generated from the path using the `path-to-regexp` library. It is used to match incoming requests to the correct route.
 
 ### Methods
